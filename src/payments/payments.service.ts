@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { envs } from 'src/config';
 import Stripe from 'stripe';
 import { PaymentSessionDto } from './dto/payment-seession.dto';
+import { todo } from 'node:test';
 
 @Injectable()
 export class PaymentsService {
@@ -11,7 +12,7 @@ export class PaymentsService {
 
     async createPaymentSession(paymentSessionDto: PaymentSessionDto) {
 
-        const { currency, items } = paymentSessionDto;
+        const { currency, items, orderId } = paymentSessionDto;
 
         const lineItems = items.map(item => ({
             price_data: {
@@ -27,6 +28,7 @@ export class PaymentsService {
             // colocar aca el id de la Ordeen
             payment_intent_data: {
                 metadata: {
+                    orderId: orderId,
                 },
             },
             line_items: lineItems,
@@ -60,8 +62,10 @@ export class PaymentsService {
             // Process the event here based on its type
             switch (event.type) {
                 case 'charge.succeeded':
-                    // Handle successful payment
-                    console.log('Pcharge.succeeded! entre aca', event);
+                    // TODO: Handle successful payment
+                    const chargeSucceded = event.data.object;
+                    console.log({ metadata: chargeSucceded.metadata, orderId: chargeSucceded.metadata.orderId });
+
                     break;
 
                 default:
