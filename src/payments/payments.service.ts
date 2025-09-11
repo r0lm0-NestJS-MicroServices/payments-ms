@@ -33,16 +33,16 @@ export class PaymentsService {
             },
             line_items: lineItems,
             mode: 'payment',
-            success_url: 'http://localhost:3003/payments/success',
-            cancel_url: 'http://localhost:3003/payments/cancel',
+            success_url: envs.stripeSuccessUrl,
+            cancel_url: envs.stripeCancelUrl,
         });
         return session;
     }
 
     async stripeWebhook(req: Request & { rawBody?: string }, res: Response) {
         const signature = req.headers['stripe-signature'] as string;
-        //const endpointSecret = 'whsec_d4210ae39a9d374150281c83f11dbe71ef12adf529912e999cb835a31d66096b';  // testing
-        const endpointSecret = 'whsec_lDDPYk4Xh8FBYo5gv520k75R1UNZOdrX';  // production
+
+        const endpointSecret = envs.stripeEndpointSecret;  // production
 
         if (!signature) {
             return res.status(400).json({ error: 'Missing stripe-signature header' });
