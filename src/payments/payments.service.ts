@@ -39,7 +39,8 @@ export class PaymentsService {
 
     async stripeWebhook(req: Request & { rawBody?: string }, res: Response) {
         const signature = req.headers['stripe-signature'] as string;
-        const endpointSecret = 'whsec_d4210ae39a9d374150281c83f11dbe71ef12adf529912e999cb835a31d66096b';
+        //const endpointSecret = 'whsec_d4210ae39a9d374150281c83f11dbe71ef12adf529912e999cb835a31d66096b';  // testing
+        const endpointSecret = 'whsec_lDDPYk4Xh8FBYo5gv520k75R1UNZOdrX';  // production
 
         if (!signature) {
             return res.status(400).json({ error: 'Missing stripe-signature header' });
@@ -58,25 +59,21 @@ export class PaymentsService {
 
             // Process the event here based on its type
             switch (event.type) {
-                case 'payment_intent.succeeded':
+                case 'charge.succeeded':
                     // Handle successful payment
-                    console.log('PaymentIntent was successful!', event.data.object);
+                    console.log('Pcharge.succeeded! entre aca', event);
                     break;
-                case 'payment_intent.payment_failed':
-                    // Handle failed payment
-                    console.log('Payment failed', event.data.object);
-                    break;
-                // Add more event types as needed
+
                 default:
-                    console.log(`Unhandled event type: ${event.type}`);
+                    console.log(`Eevent ${event.type} not handled`);
             }
 
-            return res.status(200).json({ received: true });
+            return res.status(200).json({ signature });
         } catch (error) {
             console.error('Webhook error:', error);
-            return res.status(400).json({ 
-                error: 'Webhook handler failed', 
-                details: error.message 
+            return res.status(400).json({
+                error: 'Webhook handler failed',
+                details: error.message
             });
         }
     }
