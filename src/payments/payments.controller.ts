@@ -15,12 +15,12 @@ export class PaymentsController {
 
   @Get('success')
   success() {
-    return { ok: true, message: 'success' };
+    return { ok: true, message: 'Payment successful' };
   }
 
   @Get('cancel')
   cancel() {
-    return { ok: false, message: 'cancel' };
+    return { ok: false, message: 'Payment cancelled' };
   }
 
   @Post('webhook')
