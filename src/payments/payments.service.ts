@@ -1,14 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { envs } from 'src/config';
+import { envs, NAST_SERVICE } from 'src/config';
 import Stripe from 'stripe';
 import { PaymentSessionDto } from './dto/payment-seession.dto';
-import { todo } from 'node:test';
+import { ClientProxy } from '@nestjs/microservices';
+
 
 @Injectable()
 export class PaymentsService {
 
     private readonly stripe = new Stripe(envs.stripeSecret);
+    private readonly logger = new Logger('PaymentsService');
+
+    constructor(
+        @Inject(NAST_SERVICE) private readonly client: ClientProxy,
+    ) { }
 
     async createPaymentSession(paymentSessionDto: PaymentSessionDto) {
 
@@ -36,7 +42,12 @@ export class PaymentsService {
             success_url: envs.stripeSuccessUrl,
             cancel_url: envs.stripeCancelUrl,
         });
-        return session;
+        return {
+            cancelUrl: session.cancel_url,
+            successUrl: session.success_url,
+            url: session.url,
+
+        };
     }
 
     async stripeWebhook(req: Request & { rawBody?: string }, res: Response) {
@@ -62,10 +73,17 @@ export class PaymentsService {
             // Process the event here based on its type
             switch (event.type) {
                 case 'charge.succeeded':
-                    // TODO: Handle successful payment
-                    const chargeSucceded = event.data.object;
-                    console.log({ metadata: chargeSucceded.metadata, orderId: chargeSucceded.metadata.orderId });
 
+                    const chargeSucceded = event.data.object;
+                    const payload = {
+                        stripePaymentId: chargeSucceded.id,
+                        orderId: chargeSucceded.metadata.orderId,
+                        receipUrl: chargeSucceded.receipt_url,
+
+                    }
+
+                    // this.logger.log({ payload });
+                    this.client.emit({ cmd: 'payment.succeeded' }, payload);
                     break;
 
                 default:

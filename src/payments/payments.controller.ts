@@ -1,14 +1,16 @@
-import { Controller, Get, Post, Req, Res, Body } from '@nestjs/common';
+import { Controller, Get, Post, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { PaymentsService } from './payments.service';
 import { PaymentSessionDto } from './dto/payment-seession.dto';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) { }
 
-  @Post('create-payment-session')
-  createPaymaentSesion(@Body() paymentSessionDto: PaymentSessionDto) {
+  // @Post('create-payment-session')
+  @MessagePattern({ cmd: 'create.payment.session' })
+  createPaymaentSesion(@Payload() paymentSessionDto: PaymentSessionDto) {
 
     return this.paymentsService.createPaymentSession(paymentSessionDto);
   }
